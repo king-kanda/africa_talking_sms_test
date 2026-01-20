@@ -1,13 +1,17 @@
 # import package
 import africastalking
+import os
+from dotenv import load_dotenv
 
-username = "sandbox"    # use 'sandbox' for development in the test environment
-api_key = "atsk_71061f1213fd80094295c0bb4cef6613d151801a1bbbefdc1894484ad8dac4cf2825c1c6"
+load_dotenv()
+
+username = os.getenv("AT_USERNAME")    # use 'sandbox' for development in the test environment
+api_key = os.getenv("AT_API_KEY")
 
 africastalking.initialize(username.strip(), api_key.strip())
 sms = africastalking.SMS
 
 if __name__ == "__main__":
     # Use the service synchronously
-    response = sms.send("Hello Message! bitaa", ["+254759626677"])
+    response = sms.send("Hello Message! bitaa is mumhome", ["+254759626677"])
     print(response)

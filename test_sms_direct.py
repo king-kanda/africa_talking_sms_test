@@ -1,9 +1,14 @@
 import requests
 import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # Your credentials
-username = "sandbox"
-api_key = "atsk_71061f1213fd80094295c0bb4cef6613d151801a1bbbefdc1894484ad8dac4cf2825c1c6"
+username = os.getenv("AT_USERNAME")
+api_key = os.getenv("AT_API_KEY")
 
 # Sandbox endpoint (correct endpoint is /messaging not /messaging/bulk)
 url = "https://api.sandbox.africastalking.com/version1/messaging"
