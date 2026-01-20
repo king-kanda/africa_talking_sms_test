@@ -13,5 +13,5 @@ sms = africastalking.SMS
 
 if __name__ == "__main__":
     # Use the service synchronously
-    response = sms.send("Hello Message! bitaa is mumhome", ["+254759626677"])
+    response = sms.send("Hello Message! bitaa is mumhome", ["+254759626677"], sender_id="56236")
     print(response)
