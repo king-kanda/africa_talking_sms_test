@@ -43,7 +43,7 @@ def send_sms(to_number: str, message: str) -> dict:
 if __name__ == "__main__":
     # Example: Send a test SMS
     # Update this number to your test recipient
-    test_recipient = "+1234567890"  # Replace with actual number in E.164 format
+    test_recipient = "+18777804236"  # Replace with actual number in E.164 format
     test_message = "Hello! This is a test message from Twilio."
 
     print(f"Sending SMS to {test_recipient}...")
