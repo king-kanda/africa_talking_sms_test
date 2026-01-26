@@ -1,7 +1,7 @@
-# Infobip SMS Demo - Using Official SDK
+# Infobip SMS Demo - Using HTTP Requests
 import os
+import requests
 from dotenv import load_dotenv
-from infobip_channels.sms.channel import SMSChannel
 
 load_dotenv()
 
@@ -9,12 +9,6 @@ load_dotenv()
 base_url = os.getenv("INFOBIP_BASE_URL")  # e.g., "xxxxx.api.infobip.com"
 api_key = os.getenv("INFOBIP_API_KEY")
 sender = os.getenv("INFOBIP_SENDER", "InfoSMS")  # Sender ID or phone number
-
-# Initialize the SMS channel
-channel = SMSChannel.from_auth_params({
-    "base_url": base_url,
-    "api_key": api_key
-})
 
 
 def send_sms(to_number: str, message: str) -> dict:
@@ -28,7 +22,15 @@ def send_sms(to_number: str, message: str) -> dict:
     Returns:
         dict: Message details including message ID and status
     """
-    sms_response = channel.send_sms_message({
+    url = f"https://{base_url}/sms/2/text/advanced"
+
+    headers = {
+        "Authorization": f"App {api_key}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+
+    payload = {
         "messages": [
             {
                 "destinations": [{"to": to_number}],
@@ -36,18 +38,27 @@ def send_sms(to_number: str, message: str) -> dict:
                 "text": message
             }
         ]
-    })
+    }
 
-    # Extract response details
-    if sms_response.messages:
-        msg = sms_response.messages[0]
+    response = requests.post(url, headers=headers, json=payload)
+    response_json = response.json()
+
+    if response.status_code == 200 and response_json.get("messages"):
+        msg = response_json["messages"][0]
+        status = msg.get("status", {})
         return {
-            "message_id": msg.message_id,
-            "status": msg.status.name if msg.status else "unknown",
-            "status_description": msg.status.description if msg.status else "",
-            "to": msg.to,
+            "message_id": msg.get("messageId"),
+            "status": status.get("name", "unknown"),
+            "status_description": status.get("description", ""),
+            "to": msg.get("to"),
         }
-    return {"error": "No response received"}
+
+    # Handle error response
+    error = response_json.get("requestError", {}).get("serviceException", {})
+    return {
+        "error": error.get("text", "Unknown error"),
+        "status_code": response.status_code
+    }
 
 
 def send_bulk_sms(recipients: list, message: str) -> list:
@@ -61,9 +72,17 @@ def send_bulk_sms(recipients: list, message: str) -> list:
     Returns:
         list: List of message details for each recipient
     """
+    url = f"https://{base_url}/sms/2/text/advanced"
+
+    headers = {
+        "Authorization": f"App {api_key}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+
     destinations = [{"to": number} for number in recipients]
 
-    sms_response = channel.send_sms_message({
+    payload = {
         "messages": [
             {
                 "destinations": destinations,
@@ -71,15 +90,19 @@ def send_bulk_sms(recipients: list, message: str) -> list:
                 "text": message
             }
         ]
-    })
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    response_json = response.json()
 
     results = []
-    if sms_response.messages:
-        for msg in sms_response.messages:
+    if response.status_code == 200 and response_json.get("messages"):
+        for msg in response_json["messages"]:
+            status = msg.get("status", {})
             results.append({
-                "message_id": msg.message_id,
-                "status": msg.status.name if msg.status else "unknown",
-                "to": msg.to,
+                "message_id": msg.get("messageId"),
+                "status": status.get("name", "unknown"),
+                "to": msg.get("to"),
             })
     return results
 
